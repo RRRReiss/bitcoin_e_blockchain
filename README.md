@@ -27,6 +27,7 @@ O script espera que os dados estejam organizados da seguinte forma:
 
 ```text
 /
+├── mes.py             # script para determinar o mês da análise
 ├── main.py            # O script principal de análise
 ├── README.md          # Este arquivo
 └── mar/               # Pasta contendo os arquivos diários do mês
