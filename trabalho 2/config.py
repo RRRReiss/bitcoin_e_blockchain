@@ -7,7 +7,9 @@ IGNORAR = [
     '1HaTSjMb9Tg8yDNk5axvnWqyTUss26XUjV'
 ]
 
-DATA_DIR = "./dados_cache"
+DIRETORIO_ATUAL = os.path.dirname(os.path.abspath(__file__))
+
+DATA_DIR = os.path.join(DIRETORIO_ATUAL, "dados_cache")
 
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)

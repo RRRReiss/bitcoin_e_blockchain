@@ -50,9 +50,10 @@ def processa_transacoes(data):
             tx_inputs = []
             for inp in tx['inputs']:
                 remetente = inp.get('prev_out', {}).get('addr')
+                valor_input_btc = inp.get('prev_out', {}).get('value', 0)/100000000
                 if remetente and filtra_endereco(remetente):
                     tx_inputs.append(remetente)
-                    grafo_fluxo.add_edge(remetente, ENDERECO_ALVO, tx=tx['hash'])
+                    grafo_fluxo.add_edge(remetente, ENDERECO_ALVO, tx=tx['hash'], weight=valor_input_btc)
 
             if len(tx_inputs) > 1:
                 for i in range(len(tx_inputs) - 1):

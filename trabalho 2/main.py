@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-from config import ENDERECO_ALVO
+import os
+from config import ENDERECO_ALVO, DIRETORIO_ATUAL
 from enderecos import pega_dados_endereco, verifica_tags
 from analise import processa_transacoes, calcula_gini, analise_benford
 
@@ -51,28 +52,48 @@ def main():
     print(f"    Transações com identificação de troco: {len(trocos)}")
 
     print("\n[6] GERANDO VISUALIZAÇÃO GRÁFICA...")
-    plt.figure(figsize=(14, 10))
-    pos = nx.spring_layout(grafo_fluxo, k=0.15, iterations=20)
+    plt.figure(figsize=(16, 14))
+    centro = [ENDERECO_ALVO]
+    outros_nos = [node for node in grafo_fluxo.nodes() if node != ENDERECO_ALVO]
+    shells= [centro, outros_nos]
+
+    pos = nx.shell_layout(grafo_fluxo, nlist=shells)
 
     cor_node = ['red' if node == ENDERECO_ALVO else 'blue' for node in grafo_fluxo.nodes()]
-    tamanho_node = [500 if node == ENDERECO_ALVO else 30 for node in grafo_fluxo.nodes()]
+    tamanho_node = [1200 if node == ENDERECO_ALVO else 350 for node in grafo_fluxo.nodes()]
 
-    rotulos = False
-    if len(grafo_fluxo.nodes()) < 50:
-        rotulos = True
+    pesos_dict = nx.get_edge_attributes(grafo_fluxo, 'weight')
+    espessuras = [max(0.5, np.log1p(w) * 1.5) for w in pesos_dict.values()] if pesos_dict else 1.0
+    rotulos_nos = {node: f"{node[:6]}..." if node != ENDERECO_ALVO else "ALVO\nFaraó" for node in grafo_fluxo.nodes()}
 
     nx.draw(grafo_fluxo, pos,
             node_color=cor_node,
             node_size=tamanho_node,
             edge_color='gray',
-            width=0.5,
+            width=espessuras,
             alpha=0.6,
-            with_labels=rotulos,
-            arrows=True)
+            labels=rotulos_nos,
+            with_labels=True,
+            font_size=9,
+            font_weight='bold',
+            arrows=True,
+            arrowsize=15
+            )
+    
+    rotulos_arestas = {aresta: f"{peso:.2f} BTC" for aresta, peso in pesos_dict.items()}
+    nx.draw_networkx_edge_labels(
+        grafo_fluxo, pos,
+        edge_labels=rotulos_arestas,
+        font_color='black',
+        font_size=8,
+        label_pos=0.25,
+        bbox=dict(facecolor='white', edgecolor='none', alpha=0.7)
+        )
     
     plt.title(f"Fluxo Financeiro: Faraó do Bitcoin\n(Endereço: {ENDERECO_ALVO[:10]}...)\nDetectados {len(trocos)} endereços de troco")
-    plt.savefig("relatorio_grafo.png")
-    print("     Gráfico salvo como 'relatorio_grafo.png'")
+    caminho_imagem = os.path.join(DIRETORIO_ATUAL, "relatorio_grafo.png")
+    plt.savefig(caminho_imagem, dpi=300, bbox_inches='tight')
+    print(f"     Gráfico salvo com sucesso em: {caminho_imagem}")
     plt.show()
 
 if __name__ == "__main__":
